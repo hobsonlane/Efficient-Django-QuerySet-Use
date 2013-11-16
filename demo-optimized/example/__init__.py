@@ -3,7 +3,14 @@ from django.db import connection as con
 import sqlparse
 
 class QueryTimer(object):
-    """Based on https://github.com/jfalkner/Efficient-Django-QuerySet-Use"""
+    """Based on https://github.com/jfalkner/Efficient-Django-QuerySet-Use
+
+    >>> from example.models import Sample
+    >>> qt = QueryTimer()
+    >>> cm_list = list(Sample.objects.values()[:10])
+    >>> qt.stop()  # doctest: +ELLIPSIS
+    QueryTimer(time=0.0..., num_queries=1)
+    """
 
     def __init__(self, time=None, num_queries=None, sql=''):
         self.time, self.num_queries = time, num_queries
@@ -13,13 +20,14 @@ class QueryTimer(object):
 
     def start(self):
         self.queries = []
-        self.start_time = datetime.now()
-        self.start_queries = len(con.queries)
+        self.start_time = datetime.datetime.now()
+        self.start_queries = len(connection.queries)
 
     def stop(self):
-        self.time = datetime.now() - self.start_time
-        self.queries = con.queries[self.start_queries:]
+        self.time = (datetime.datetime.now() - self.start_time).total_seconds()
+        self.queries = connection.queries[self.start_queries:]
         self.num_queries = len(self.queries)
+        print self
 
     def format_sql(self):
         if self.time is None or self.queries is None:
@@ -31,7 +39,7 @@ class QueryTimer(object):
         return self.sql
 
     def __repr__(self):
-        return '%s(time=%s, num_queries=%s, sql=%s)' % (self.__class__.__name__, self.time, self.num_queries)
+        return '%s(time=%s, num_queries=%s)' % (self.__class__.__name__, self.time, self.num_queries)
 
 
 def start():
