@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.db import connection as con
+import django.db
 import sqlparse
 
 class QueryTimer(object):
@@ -12,7 +12,8 @@ class QueryTimer(object):
     QueryTimer(time=0.0..., num_queries=1)
     """
 
-    def __init__(self, time=None, num_queries=None, sql=''):
+    def __init__(self, time=None, num_queries=None, sql='', connection=None):
+        self.connection = connection or django.db.connection
         self.time, self.num_queries = time, num_queries
         self.start_time, self.start_queries = None, None
         self.sql = sql
@@ -21,11 +22,11 @@ class QueryTimer(object):
     def start(self):
         self.queries = []
         self.start_time = datetime.datetime.now()
-        self.start_queries = len(connection.queries)
+        self.start_queries = len(self.connection.queries)
 
     def stop(self):
         self.time = (datetime.datetime.now() - self.start_time).total_seconds()
-        self.queries = connection.queries[self.start_queries:]
+        self.queries = self.connection.queries[self.start_queries:]
         self.num_queries = len(self.queries)
         print self
 
@@ -40,6 +41,7 @@ class QueryTimer(object):
 
     def __repr__(self):
         return '%s(time=%s, num_queries=%s)' % (self.__class__.__name__, self.time, self.num_queries)
+
 
 
 def start():
