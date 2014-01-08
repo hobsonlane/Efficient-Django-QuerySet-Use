@@ -15,7 +15,7 @@ class QueryTimer(object):
     def __init__(self, time=None, num_queries=None, sql='', connection=None):
         self.connection = connection or django.db.connection
         self.time, self.num_queries = time, num_queries
-        self.start_time, self.start_queries = None, None
+        self.start_time, self.start_queries, self.queries = None, None, None
         self.sql = sql
         self.start()
 
